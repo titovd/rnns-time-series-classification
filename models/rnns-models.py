@@ -4,16 +4,16 @@ import torch.nn as nn
 
 class SimpleRNN(nn.Module):
     def __init__(
-        self, 
-        input_size, 
-        output_size, 
-        hidden_size=128, 
+        self,
+        input_size,
+        output_size,
+        hidden_size=128,
         p_dropout=1/2
     ):
         super().__init__()
         self.hidden_size = hidden_size
-        self.rnn = nn.RNN(input_size, 
-                          hidden_size, 
+        self.rnn = nn.RNN(input_size,
+                          hidden_size,
                           batch_first=True)
         self.dropout = nn.Dropout(p=p_dropout)
         self.classifier = nn.Sequential(
@@ -22,7 +22,7 @@ class SimpleRNN(nn.Module):
             nn.Dropout(p=p_dropout),
             nn.Linear(64, output_size)
         )
-        
+
     def forward(self, input_seq):
         _, hidden_state = self.rnn(input_seq)
         output = self.dropout(hidden_state)
@@ -32,16 +32,16 @@ class SimpleRNN(nn.Module):
 
 class SimpleGRU(nn.Module):
     def __init__(
-        self, 
-        input_size, 
-        output_size, 
-        hidden_size=128, 
+        self,
+        input_size,
+        output_size,
+        hidden_size=128,
         p_dropout=1/2
     ):
         super().__init__()
         self.hidden_size = hidden_size
-        self.rnn = nn.GRU(input_size, 
-                          hidden_size, 
+        self.rnn = nn.GRU(input_size,
+                          hidden_size,
                           batch_first=True)
         self.dropout = nn.Dropout(p_dropout)
         self.classifier = nn.Sequential(
@@ -50,7 +50,7 @@ class SimpleGRU(nn.Module):
             nn.Dropout(p=p_dropout),
             nn.Linear(64, output_size)
         )
-        
+
     def forward(self, input_seq):
         _, hidden_state = self.rnn(input_seq)
         predictions = self.classifier(hidden_state.squeeze(0))
@@ -59,16 +59,16 @@ class SimpleGRU(nn.Module):
 
 class SimpleLSTM(nn.Module):
     def __init__(
-        self, 
-        input_size, 
-        output_size, 
-        hidden_size=128, 
+        self,
+        input_size,
+        output_size,
+        hidden_size=128,
         p_dropout=1/2
     ):
         super().__init__()
         self.hidden_size = hidden_size
-        self.rnn = nn.LSTM(input_size, 
-                           hidden_size, 
+        self.rnn = nn.LSTM(input_size,
+                           hidden_size,
                            batch_first=True)
         self.dropout = nn.Dropout(p_dropout)
         self.classifier = nn.Sequential(
@@ -77,7 +77,7 @@ class SimpleLSTM(nn.Module):
             nn.Dropout(p_dropout),
             nn.Linear(64, output_size)
         )
-        
+
     def forward(self, input_seq):
         _, (hidden_state, _) = self.rnn(input_seq)
         hidden_state = self.dropout(hidden_state)
