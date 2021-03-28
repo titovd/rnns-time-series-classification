@@ -4,7 +4,7 @@ import os
 import numpy as np
 import pandas as pd
 from scipy import stats
-
+from sklearn.model_selection import train_test_split
 from tqdm.auto import tqdm
 
 COLUMN_NAMES = [
@@ -63,17 +63,35 @@ def main(input_filepath, output_filepath, time_step, segment_time_size):
         label = stats.mode(data['activity'][i: i + segment_time_size])[0][0]
         labels.append(label)
 
-    data_processed = np.asarray(data_processed, dtype=np.float32).transpose(0, 2, 1)
-    labels = np.asarray(pd.get_dummies(labels), dtype=np.float32)
+    data_processed = np.asarray(data_processed,
+                                dtype=np.float32).transpose(0, 2, 1)
+    labels = np.asarray(pd.get_dummies(labels),
+                        dtype=np.float32)
 
     print("Processed data shape: ", data_processed.shape)
     print("Labels shape:", labels.shape)
 
     if not os.path.exists(output_filepath):
         os.mkdir(output_filepath)
-    np.save(output_filepath + 'wisdm_data.npy', data_processed)
-    np.save(output_filepath + 'wisdm_label.npy', labels)
-    print(f"Saved wisdm_data.npy, wisdm_label.npy to {output_filepath}")
+
+    X_train, X_test, y_train, y_test = train_test_split(data_processed,
+                                                        labels,
+                                                        train_size=0.7,
+                                                        random_state=42)
+    X_test, X_val, y_test, y_val = train_test_split(X_test,
+                                                    y_test,
+                                                    train_size=0.5,
+                                                    random_state=42)
+    np.save(output_filepath + 'train_wisdm_data.npy', X_train)
+    np.save(output_filepath + 'train_wisdm_label.npy', y_train)
+
+    np.save(output_filepath + 'test_wisdm_data.npy', X_test)
+    np.save(output_filepath + 'test_wisdm_label.npy', y_test)
+
+    np.save(output_filepath + 'val_wisdm_data.npy', X_val)
+    np.save(output_filepath + 'val_wisdm_label.npy', y_val)
+    print(f"Saved train, test, val data to {output_filepath}")
+    print(f"train shape: {X_train.shape}, val shape: {X_val.shape}, test shape: {X_test.shape}")
 
 
 if __name__ == '__main__':
