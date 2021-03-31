@@ -7,6 +7,9 @@ from scipy import stats
 from sklearn.model_selection import train_test_split
 from tqdm.auto import tqdm
 
+import seaborn as sns
+import matplotlib.pyplot as plt
+
 COLUMN_NAMES = [
     'user',
     'activity',
@@ -65,9 +68,9 @@ def main(input_filepath, output_filepath, time_step, segment_time_size):
 
     data_processed = np.asarray(data_processed,
                                 dtype=np.float32).transpose(0, 2, 1)
-    labels = np.asarray(pd.get_dummies(labels),
+    labels_dummy = pd.get_dummies(labels)
+    labels = np.asarray(labels_dummy,
                         dtype=np.float32)
-
     print("Processed data shape: ", data_processed.shape)
     print("Labels shape:", labels.shape)
 
