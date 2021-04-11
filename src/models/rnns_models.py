@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 
 
 class SimpleRNN(nn.Module):
@@ -97,7 +98,7 @@ class AttentionModel(nn.Module):
         self.hidden_size = hidden_size
         self.input_size = input_size
         self.output_size = output_size
-        self.p_dropout
+        self.p_dropout = p_dropout
 
         self.rnn = nn.LSTM(input_size, hidden_size)
         self.classifier = nn.Sequential(
@@ -116,8 +117,8 @@ class AttentionModel(nn.Module):
 
     def forward(self, input):
         input = input.permute(1, 0, 2)
-        output, (final_hidden_state, final_cell_state) = self.lstm(input)
-        output = output.permute(1, 0 2)
+        output, (final_hidden_state, final_cell_state) = self.rnn(input)
+        output = output.permute(1, 0, 2)
         context = self.attention_net(output, final_hidden_state)
         general_vector = torch.cat((context, final_hidden_state.squeeze(0)), dim=1)
         logits = self.classifier(general_vector)
@@ -129,19 +130,19 @@ class GRUFCNModel(nn.Module):
     """
     TODO
     """
-    def __init__(self, input_size, hidden_size, output_size):
+    def __init__(self, input_size, output_size, hidden_size):
         super().__init__()
         self.input_size = input_size
         self.output_size = output_size
         self.hidden_size = hidden_size
 
-        self.rnn = nn.GRU(self.input_size, self.hidden_size, batch_first =True)
-        nn.init.xavier_uniform(self.rnn[0].weight_hh_l0)
-        nn.init.xavier_uniform(self.rnn[0].weight_ih_l0)
+        self.rnn = nn.Sequential(nn.GRU(self.input_size, self.hidden_size, batch_first =True))
+        nn.init.xavier_uniform_(self.rnn[0].weight_hh_l0)
+        nn.init.xavier_uniform_(self.rnn[0].weight_ih_l0)
 
         self.dropout = nn.Dropout(p=0.8)
         self.conv = nn.Sequential(
-            nn.Conv1d(18, 128, 8),
+            nn.Conv1d(self.input_size, 128, 8),
             nn.BatchNorm1d(128),
             nn.ReLU(),
 
@@ -159,7 +160,7 @@ class GRUFCNModel(nn.Module):
         nn.init.kaiming_uniform_(self.conv[6].weight)
 
 
-        self.fc = nn.Linear(self.hidden_size + 128*147, self.output_size)
+        self.fc = nn.Linear(self.hidden_size + 128*167, self.output_size)
 
     def forward(self, x):
         # x : [batch_size, seq_len, features]
